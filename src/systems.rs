@@ -1,11 +1,11 @@
 
 use specs::{
     //Builder, DispatcherBuilder,
-    Component, Entities,
+    Entities,
     ReadStorage, WriteStorage, System, //VecStorage, 
-    World, WorldExt, RunNow, Read,
+    Read,
 };
-use specs::shred::{Dispatcher};
+//use specs::shred::{Dispatcher};
 
 use crate::resources::{InputResource};
 use crate::components::{Position,Velocity,GridLoc};

@@ -15,7 +15,7 @@ fn init_world(world: &mut World) {
     const VELX_RANGE: f32 = 150.0;
     const VELY_RANGE: f32 = 80.0;
 
-    let player = PlayerEntity::build(world, 400.0, 20.0);
+    PlayerEntity::build(world, 400.0, 20.0);
 
     for i in 0..75 {
         let x: f32 = rng.gen::<f32>() * POSX_RANGE;
