@@ -3,10 +3,9 @@ use ggez::{Context, GameResult};
 
 use ggez::graphics;
 use ggez::nalgebra as na;
-use ggez::conf::{NumSamples,WindowSetup};
-use ggez::graphics::{Color,set_window_title};
+use ggez::graphics::{Color,DrawParam,set_window_title};
 
-use specs::{World, WorldExt};
+use specs::{WorldExt};
 use rand::prelude::*;
 
 use crate::components::{Position,DisplayComp};
@@ -48,8 +47,10 @@ impl Renderer {
                     if disp.circle {
                         let mut col_vals: (u8,u8,u8) = rng.gen();
                         //println!("Entity {}, Circle pos: {:?}", ent.id(), pos);
-                        if let Err(_) = graphics::draw(ctx, &circle, (na::Point2::new(pos.x, pos.y),
-                                Color::from_rgba(col_vals.0,col_vals.1,col_vals.2,200) )) {
+                        if let Err(_) = graphics::draw(ctx, &circle, DrawParam::default()
+                                    .dest(na::Point2::new(pos.x, pos.y))
+                                    .scale(na::Vector2::new(1.0f32,1.0f32))
+                                    .color(Color::from_rgba(col_vals.0,col_vals.1,col_vals.2,200)) ) {
                             draw_ok = false;
                         };    
                     }
