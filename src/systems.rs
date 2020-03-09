@@ -1,13 +1,15 @@
 
 use specs::{
-    Builder, DispatcherBuilder,
+    //Builder, DispatcherBuilder,
     Component, Entities,
-    ReadStorage, WriteStorage, System, VecStorage, 
-    World, WorldExt, RunNow
+    ReadStorage, WriteStorage, System, //VecStorage, 
+    World, WorldExt, RunNow, Read,
 };
 use specs::shred::{Dispatcher};
 
+use crate::resources::{InputResource};
 use crate::components::{Position,Velocity,GridLoc};
+use crate::components::player::{PlayerComponent};
 
 /**** SYSTEMS *********************************/
 
@@ -35,10 +37,11 @@ impl UpdatePos {
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_grid_locs(pos: &mut Position) -> Vec<GridLoc> {
         let gl_vec = Vec::<GridLoc>::new();
 
-        
+
 
         gl_vec
     }
@@ -50,15 +53,36 @@ impl<'a> System<'a> for UpdatePos {
 
     fn run(&mut self, (mut vel, mut pos): Self::SystemData) {
         use specs::Join;
-        let mut i = 0;
+        //let mut i = 0;
         for (vel, pos) in (&mut vel, &mut pos).join() {
             // update positions by velocity vectors
             pos.x += vel.x * 0.05;
             pos.y += vel.y * 0.05;
             // Constrain position to a box (hardcoded atm)
+            //  and reverse velocity when going out of bounds
             self::UpdatePos::box_pos(pos, vel);
-            //println!("UpdatePos on #{}", &i);
-            i += 1;
+        }
+    }
+}
+
+
+// UpdatePos system - can update the position of each entity by the velocity amount
+pub struct GravSys;
+
+impl GravSys {
+   
+}
+
+impl<'a> System<'a> for GravSys {
+    type SystemData = WriteStorage<'a, Velocity>;
+
+    fn run(&mut self, mut vel: Self::SystemData) {
+        use specs::Join;
+        for vel in (&mut vel).join() {
+            // update velocity if gravity is applied
+            if vel.gravity {
+                vel.y += 9.8 * 0.05;
+            }
         }
     }
 }
@@ -81,32 +105,56 @@ impl<'a> System<'a> for SumSys {
 }
 
 // handle game level commands
+#[allow(dead_code)]
 pub struct GameCommandSystem;
 // handle changes to the game state
+#[allow(dead_code)]
 pub struct GameStateSys;
 
 // handle input state to control Players
-pub struct InputSystem {
-    dir_press: [u16;4]
-}
+// every frame, operate on velocity of player components
+//  based on InputResource
+pub struct InputSystem;
 impl InputSystem {
     pub fn new() -> InputSystem {
-        InputSystem {
-            dir_press: [0,0,0,0].into()
-        }
+        InputSystem
     }
 }
 impl<'a> System<'a> for InputSystem {
-    type SystemData = (ReadStorage<'a, Velocity>,
-                       ReadStorage<'a, Position>,
+    type SystemData = (WriteStorage<'a, Velocity>,
+                        ReadStorage<'a, PlayerComponent>,
+                       Read<'a, InputResource>,
                         Entities<'a>);
 
-    fn run(&mut self, (vel, pos, ent): Self::SystemData) {
+    fn run(&mut self, (mut vel, player, input, ent): Self::SystemData) {
         use specs::Join;
-        let mut i = 0;
-        for (vel, pos, e) in (&vel, &pos, &ent).join() {            
-            //println!("[INPUT SYSTEM] Ent {:?}, Pos: {:?} Vel: {:?}", &e, &pos, &vel);
-            i += 1;
+        // iterator over velocities with player components and input
+        for (vel, _player, _e) in (&mut vel, &player, &ent).join() {        
+            //println!("Input proc for player {}", &player.player_name);    
+            let multi_axis = (input.dirs_pressed[0] && (input.dirs_pressed[2] || input.dirs_pressed[3]))
+                || (input.dirs_pressed[1] && (input.dirs_pressed[2] || input.dirs_pressed[3]));
+            let mut vec_amt = 80.0;
+            if multi_axis {
+                vec_amt = 57.0;
+            }
+            if input.dirs_pressed[0] {
+                vel.x = -vec_amt;
+            }
+            else if input.dirs_pressed[1] {
+                vel.x = vec_amt;
+            }
+            else {
+                vel.x = 0.0;
+            }
+            if input.dirs_pressed[2] || input.jump_pressed {
+                vel.y = -vec_amt;
+            }
+            else if input.dirs_pressed[3] {
+                vel.y = vec_amt;
+            }
+            else {
+                vel.y = 0.0;
+            }
         }
     }
 }

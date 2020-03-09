@@ -1,104 +1,34 @@
-//! The simplest possible example that does something.
-
+// external crates
 use ggez;
 use ggez::event;
-use ggez::graphics;
-use ggez::nalgebra as na;
-use ggez::{Context, GameResult};
+use ggez::{GameResult};
 use ggez::conf::{NumSamples,WindowSetup};
 
-use specs::{Builder, Component, DispatcherBuilder, ReadStorage, System, VecStorage,World, WorldExt, RunNow};
-use specs::shred::{Dispatcher};
+// ================== ROOT MODULES ========================
 
-use rand;
-
+// Builders for entity types
 mod entities;
+// Components available to entities
 mod components;
+// Shared world data
+mod resources;
+// Systems which process world state updates
 mod systems;
+// Sets up the world
 mod world;
+// Render methods for app
+mod render;
+// Input key mapping from codes to actions, handle actions
+mod input;
+// creates game state with world and dispatcher, handles event loop
+//   Update, Draw, KeyDown KeyUp, etc.
+//   Events are forwarded to specs dispatcher and render/input modules
 mod game_state;
 
-// use components::{Position,Velocity};
-// //use systems::{};
-// use world::{create_world,create_dispatcher};
 
-// struct GameState<'a> {
-//     dispatcher: Dispatcher<'a,'a>,
-//     world: World,
-// }
+// ======================== MAIN INIT APP ============================
 
-// impl<'a> GameState<'a> {
-//     fn new() -> GameResult<GameState<'static>> {
-        
-//         // Create main state instance with dispatcher and world
-//         let mut s = GameState { 
-//             dispatcher: create_dispatcher(), 
-//             world: create_world() 
-//         };
-
-//         // Perform initial dispatch and update world
-//         println!("Before initial dispatch & maintain...");
-//         s.dispatcher.dispatch(&s.world);
-//         s.world.maintain();
-//         println!("After initial dispatch & maintain...");
-
-//         Ok(s)
-//     }
-// }
-
-// impl<'a> GameState<'a> {
-//     fn circs(&self, ctx: &mut Context) -> Result<(),()> {
-//         match graphics::Mesh::new_circle(
-//             ctx,
-//             graphics::DrawMode::fill(),
-//             na::Point2::new(0.0, 0.0),
-//             40.0,
-//             4.0,
-//             graphics::WHITE,
-//         ) {
-//             Ok(circle) => {
-//                 use specs::join::Join;
-                
-//                 // Get Position read storage - access to positions of all entities
-//                 let pos = self.world.read_storage::<Position>();
-//                 // Get entities list
-//                 let ent = self.world.entities();
-//                 // iterator positions and entities together read-only
-//                 for (pos, ent) in (&pos, &ent).join() {
-//                     println!("Entity {}, Circle pos: {:?}", ent.id(), pos);
-//                     graphics::draw(ctx, &circle, (na::Point2::new(pos.x, pos.y),));
-//                 }
-
-//                 Ok(())
-//             },
-//             _ => Err(())
-//         }
-//     }
-
-// }
-
-// impl event::EventHandler for GameState<'static> {
-//     fn update(&mut self, _ctx: &mut Context) -> GameResult {
-
-//         // Get world and dispatcher to increment the entity system
-//         let world = &mut self.world;
-//         let dispatcher = &mut self.dispatcher;
-//         dispatcher.dispatch(&world);
-//         world.maintain();
-
-//         Ok(())
-//     }
-
-//     fn draw(&mut self, ctx: &mut Context) -> GameResult {
-//         graphics::clear(ctx, [0.1, 0.2, 0.3, 1.0].into());
-
-//         self.circs(ctx);
-
-//         graphics::present(ctx)?;
-//         Ok(())
-//     }
-// }
-
+// Do setup and start main event loop
 pub fn main() -> GameResult {
     // get ggez context build - builds window app
     let cb = ggez::ContextBuilder::new("super_simple", "ggez")

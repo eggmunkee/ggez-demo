@@ -2,32 +2,42 @@ use specs::{Builder, Component, ReadStorage, System, VecStorage,World, WorldExt,
 use specs::shred::{Dispatcher, DispatcherBuilder};
 use rand::prelude::*;
 
+use crate::resources::{add_resources};
 use crate::components::{Position, Velocity, register_components};
+use crate::entities::player::{PlayerEntity};
+use crate::entities::ball::{Ball};
 use crate::systems::*;
 
 fn init_world(world: &mut World) {
     let mut rng = rand::thread_rng();
-    const posx_range: f32 = 900.0;
-    const posy_range: f32 = 600.0;
-    const velx_range: f32 = 150.0;
-    const vely_range: f32 = 80.0;
+    const POSX_RANGE: f32 = 900.0;
+    const POSY_RANGE: f32 = 600.0;
+    const VELX_RANGE: f32 = 150.0;
+    const VELY_RANGE: f32 = 80.0;
 
-    for i in 0..150 {
-        let x: f32 = rng.gen::<f32>() * posx_range;
-        let y: f32 = rng.gen::<f32>() * posy_range;
-        let vx: f32 = (rng.gen::<f32>() * velx_range) - (velx_range / 2.0);
-        let vy: f32 = (rng.gen::<f32>() * vely_range) - (vely_range / 2.0);
-        // create an object in world
-        world.create_entity()
-        .with(Position { x: x, y: y })
-        .with(Velocity { x: vx, y: vy })
-        .build();
+    let player = PlayerEntity::build(world, 400.0, 20.0);
+
+    for i in 0..75 {
+        let x: f32 = rng.gen::<f32>() * POSX_RANGE;
+        let y: f32 = rng.gen::<f32>() * POSY_RANGE;
+        let vx: f32 = (rng.gen::<f32>() * VELX_RANGE) - (VELX_RANGE / 2.0);
+        let vy: f32 = (rng.gen::<f32>() * VELY_RANGE) - (VELY_RANGE / 2.0);
+        // build ball entity and add to world
+        if i % 2 == 0 {
+            Ball::build(world, x, y, vx, vy);
+        }
+        else {
+            Ball::build_static(world, x, y);
+        }
+        
     }
 }
 
 pub fn create_world<'a>() -> World {
     let mut world = World::new();
     
+    add_resources(&mut world);
+
     // Register all components
     register_components(&mut world);
 
@@ -42,6 +52,7 @@ pub fn create_dispatcher<'a>() -> Dispatcher<'a,'a> {
     let dispatcher = DispatcherBuilder::new()
     .with(InputSystem::new(), "input_system", &[])
     .with(UpdatePos, "update_pos", &["input_system"])
+    .with(GravSys, "grav_sys", &["update_pos"])
     //.with(SumSys, "sum_sys", &["update_pos"])
     .build();
 
