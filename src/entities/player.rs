@@ -1,6 +1,7 @@
 use specs::{Builder,Entity,EntityBuilder,World,WorldExt};
 
 use crate::components::{Position, Velocity,DisplayComp};
+use crate::components::collision::{Collision};
 use crate::components::player::{PlayerComponent};
 use crate::systems::*;
 
@@ -15,6 +16,7 @@ impl PlayerEntity {
         .with(Position { x: x, y: y })
         .with(Velocity { x: 0.0, y: 0.0, gravity: false })
         .with(DisplayComp { circle: false })
+        .with(Collision::new_square(5.0))
         .with(player_comp)
         .build()
     }

@@ -53,6 +53,7 @@ pub fn create_dispatcher<'a>() -> Dispatcher<'a,'a> {
     .with(InputSystem::new(), "input_system", &[])
     .with(UpdatePos, "update_pos", &["input_system"])
     .with(GravSys, "grav_sys", &["update_pos"])
+    .with(InterActorSys::new(), "interactor_sys", &["grav_sys"])
     //.with(SumSys, "sum_sys", &["update_pos"])
     .build();
 

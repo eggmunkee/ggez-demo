@@ -9,6 +9,7 @@ use specs::{
 
 use crate::resources::{InputResource};
 use crate::components::{Position,Velocity,GridLoc};
+use crate::components::collision::{Collision};
 use crate::components::player::{PlayerComponent};
 
 /**** SYSTEMS *********************************/
@@ -167,6 +168,30 @@ pub struct MoveActorsSys;
 
 // handle interactions between interactive actors
 pub struct InterActorSys;
+impl InterActorSys {
+    pub fn new() -> InterActorSys {
+        InterActorSys
+    }
+}
+
+impl<'a> System<'a> for InterActorSys {
+    type SystemData = (WriteStorage<'a, Position>,
+                        WriteStorage<'a, Velocity>,                        
+                        ReadStorage<'a, Collision>,
+                        Entities<'a>);
+
+    fn run(&mut self, (mut pos, mut vel, collision, ent): Self::SystemData) {
+        use specs::Join;
+
+        let blocks = Vec::<[f64;4]>::new();
+        
+        // iterator over velocities with player components and input
+        for (_pos, _vel, _coll, e) in (&pos, &vel, &collision, &ent).join() {        
+            println!("InterActor sys proc for entity: {}", &e.id());   
+        }
+
+    }
+}
 
 // handle sorting the sprites for drawing
 pub struct ZOrderSpriteSys;
