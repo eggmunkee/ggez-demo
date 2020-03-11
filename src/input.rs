@@ -6,6 +6,11 @@ use specs::{World, WorldExt};
 
 use crate::resources::{InputResource};
 
+#[derive(Debug)]
+pub enum MouseInput {
+    Left, Middle, Right
+}
+#[derive(Debug)]
 pub enum InputKey {
     Left,
     Right,
@@ -19,6 +24,22 @@ pub enum InputKey {
 pub struct InputMap;
 
 impl InputMap {
+    pub fn map_mouse_input(button_index: &usize) -> Option<MouseInput> {
+        //Some(InputKey::Left)
+
+        match &button_index {
+            0 => {
+                Some(MouseInput::Left)
+            },
+            1 => {
+                Some(MouseInput::Middle)
+            },
+            2 => {
+                Some(MouseInput::Right)
+            },            
+            _ => None
+        }
+    }
     pub fn map_keycode(keycode: &KeyCode) -> Option<InputKey> {
         //Some(InputKey::Left)
 
@@ -112,5 +133,64 @@ impl InputMap {
             },
             _ => {}
         }
+    }
+
+    pub fn mouse_button_down(world: &mut World, _ctx: &mut Context, button_index: usize) {
+
+        match Self::map_mouse_input(&button_index) {
+            Some(inp) => match inp {
+                MouseInput::Left => {
+                    let mut input = world.fetch_mut::<InputResource>();
+                    input.set_mouse_down(true, 0);
+                    println!("Mouse button pressed: {:?}, x: {}, y: {}", &inp, &input.mouse_x, &input.mouse_y);
+                },
+                MouseInput::Middle => {
+                    let mut input = world.fetch_mut::<InputResource>();
+                    //input.set;
+                    input.set_mouse_down(true, 1);
+                    println!("Mouse button pressed: {:?}, x: {}, y: {}", &inp, &input.mouse_x, &input.mouse_y);
+                },
+                MouseInput::Right => {
+                    let mut input = world.fetch_mut::<InputResource>();
+                    //input.set_jump(false);
+                    input.set_mouse_down(true, 2);
+                    println!("Mouse button pressed: {:?}, x: {}, y: {}", &inp, &input.mouse_x, &input.mouse_y);
+                },
+                _ => {}
+            },
+            _ => {}
+        }
+    }
+
+    pub fn mouse_button_up(world: &mut World, _ctx: &mut Context, button_index: usize) {
+
+        match Self::map_mouse_input(&button_index) {
+            Some(inp) => match inp {
+                MouseInput::Left => {
+                    let mut input = world.fetch_mut::<InputResource>();
+                    input.set_mouse_down(false, 0);
+                    println!("Mouse button released: {:?}, x: {}, y: {}", &inp, &input.mouse_x, &input.mouse_y);
+                },
+                MouseInput::Middle => {
+                    let mut input = world.fetch_mut::<InputResource>();
+                    //input.set;
+                    input.set_mouse_down(false, 1);
+                },
+                MouseInput::Right => {
+                    let mut input = world.fetch_mut::<InputResource>();
+                    //input.set_jump(false);
+                    input.set_mouse_down(false, 2);
+                    println!("Mouse button released: {:?}, x: {}, y: {}", &inp, &input.mouse_x, &input.mouse_y);
+                },
+                _ => {}
+            },
+            _ => {}
+        }
+    }
+
+    pub fn mouse_set_pos(world: &mut World, _ctx: &mut Context, x: f32, y: f32) {
+        let mut input = world.fetch_mut::<InputResource>();
+        input.set_mouse_pos(x, y);
+        println!("Mouse motion: x: {}, y: {}", &input.mouse_x, &input.mouse_y);
     }
 }

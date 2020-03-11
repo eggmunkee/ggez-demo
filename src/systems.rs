@@ -37,7 +37,7 @@ impl UpdatePos {
         }
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code,unused_variables)]
     pub fn get_grid_locs(pos: &mut Position) -> Vec<GridLoc> {
         let gl_vec = Vec::<GridLoc>::new();
 
@@ -133,9 +133,9 @@ impl<'a> System<'a> for InputSystem {
             //println!("Input proc for player {}", &player.player_name);    
             let multi_axis = (input.dirs_pressed[0] && (input.dirs_pressed[2] || input.dirs_pressed[3]))
                 || (input.dirs_pressed[1] && (input.dirs_pressed[2] || input.dirs_pressed[3]));
-            let mut vec_amt = 80.0;
+            let mut vec_amt = 200.0;
             if multi_axis {
-                vec_amt = 57.0;
+                vec_amt = 0.77 * vec_amt;
             }
             if input.dirs_pressed[0] {
                 vel.x = -vec_amt;

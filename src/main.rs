@@ -2,10 +2,10 @@
 use ggez;
 use ggez::event;
 use ggez::{GameResult};
-use ggez::conf::{NumSamples,WindowSetup};
 
 // ================== ROOT MODULES ========================
 
+mod conf;
 // Builders for entity types
 mod entities;
 // Components available to entities
@@ -25,6 +25,7 @@ mod input;
 //   Events are forwarded to specs dispatcher and render/input modules
 mod game_state;
 
+use crate::conf::*;
 
 // ======================== MAIN INIT APP ============================
 
@@ -32,13 +33,8 @@ mod game_state;
 pub fn main() -> GameResult {
     // get ggez context build - builds window app
     let cb = ggez::ContextBuilder::new("super_simple", "ggez")
-        .window_setup(WindowSetup {
-            title: "GGEZ ~~~ DEMO".to_owned(),
-            samples: NumSamples::Zero,
-            vsync: true,
-            icon: "".to_owned(),
-            srgb: true,
-        });
+        .window_setup(get_window_setup())
+        .window_mode(get_window_mode());
     // build
     let (ctx, event_loop) = &mut cb.build()?;
     // create app's state

@@ -18,7 +18,7 @@ use rand::prelude::*;
 use crate::world::{create_world,create_dispatcher};
 
 use crate::render;
-use crate::input::{InputMap};
+use crate::input::{InputMap,MouseInput};
 
 #[derive(Copy,Clone,Debug)]
 pub enum State {
@@ -44,6 +44,7 @@ impl<'a> GameState<'a> {
             dispatcher: create_dispatcher(), 
             world: create_world() 
         };
+        s.pause();
 
         // Perform initial dispatch and update world
         println!("Dispatcher & World init");
@@ -73,7 +74,7 @@ impl<'a> GameState<'a> {
 }
 
 impl event::EventHandler for GameState<'static> {
-    fn update(&mut self, ctx: &mut Context) -> GameResult {
+    fn update(&mut self, _ctx: &mut Context) -> GameResult {
 
         // Handle any GameState
 
@@ -94,6 +95,61 @@ impl event::EventHandler for GameState<'static> {
         render::Renderer::draw(self, ctx)
     }
 
+    fn mouse_button_down_event(&mut self, ctx: &mut Context, button: MouseButton, x: f32, y: f32) {
+        let button_index = match button {
+            MouseButton::Left => {
+                Some(0usize)
+            },
+            MouseButton::Middle => {
+                Some(1)
+            },
+            MouseButton::Right => {
+                Some(2)
+            }
+            _ => None
+        };
+        if let Some(index) = button_index {
+            InputMap::mouse_button_down(&mut self.world, ctx, index.clone());
+        }
+        //self.mouse_down = true;
+        //println!("Mouse button pressed: {:?}, x: {}, y: {}, button index: {:?}", button, x, y, button_index);
+    }
+
+    fn mouse_button_up_event(&mut self, ctx: &mut Context, button: MouseButton, x: f32, y: f32) {
+        let button_index = match button {
+            MouseButton::Left => {
+                Some(0usize)
+            },
+            MouseButton::Middle => {
+                Some(1)
+            },
+            MouseButton::Right => {
+                Some(2)
+            }
+            _ => None
+        };
+        if let Some(index) = button_index {
+            InputMap::mouse_button_up(&mut self.world, ctx, index.clone());
+        }
+        
+    }
+
+    fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, xrel: f32, yrel: f32) {
+        // if self.mouse_down {
+        //     self.pos_x = x;
+        //     self.pos_y = y;
+        // }
+        InputMap::mouse_set_pos(&mut self.world, _ctx, x, y);
+        // println!(
+        //     "Mouse motion, x: {}, y: {}, relative x: {}, relative y: {}",
+        //     x, y, xrel, yrel
+        // );
+    }
+
+    fn mouse_wheel_event(&mut self, _ctx: &mut Context, x: f32, y: f32) {
+        println!("Mousewheel event, x: {}, y: {}", x, y);
+    }
+
     fn key_down_event(
         &mut self,
         ctx: &mut Context,
@@ -111,6 +167,18 @@ impl event::EventHandler for GameState<'static> {
         keymod: KeyMods,
     ) {
         InputMap::key_up(&mut self.world, ctx, keycode, keymod);
+    }
+
+    fn text_input_event(&mut self, _ctx: &mut Context, ch: char) {
+        println!("Text input: {}", ch);
+    }
+
+    fn focus_event(&mut self, _ctx: &mut Context, gained: bool) {
+        if gained {
+            println!("Focus gained");
+        } else {
+            println!("Focus lost");
+        }
     }
 
 }

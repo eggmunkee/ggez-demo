@@ -49,5 +49,6 @@ pub fn register_components(world: &mut World) {
     world.register::<DisplayComp>();
     
     // sub-module components
+    self::collision::register_components(world);
     self::player::register_components(world);
 }

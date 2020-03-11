@@ -1,9 +1,9 @@
-use specs::{Builder, Component, ReadStorage, System, VecStorage,World, WorldExt, RunNow};
+use specs::{World, WorldExt}; // Builder, Component, ReadStorage, System, VecStorage, RunNow
 use specs::shred::{Dispatcher, DispatcherBuilder};
 use rand::prelude::*;
 
 use crate::resources::{add_resources};
-use crate::components::{Position, Velocity, register_components};
+use crate::components::{register_components}; // Position, Velocity,
 use crate::entities::player::{PlayerEntity};
 use crate::entities::ball::{Ball};
 use crate::systems::*;
@@ -12,8 +12,8 @@ fn init_world(world: &mut World) {
     let mut rng = rand::thread_rng();
     const POSX_RANGE: f32 = 900.0;
     const POSY_RANGE: f32 = 600.0;
-    const VELX_RANGE: f32 = 150.0;
-    const VELY_RANGE: f32 = 80.0;
+    const VELX_RANGE: f32 = 375.0;
+    const VELY_RANGE: f32 = 125.0;
 
     PlayerEntity::build(world, 400.0, 20.0);
 
@@ -23,7 +23,7 @@ fn init_world(world: &mut World) {
         let vx: f32 = (rng.gen::<f32>() * VELX_RANGE) - (VELX_RANGE / 2.0);
         let vy: f32 = (rng.gen::<f32>() * VELY_RANGE) - (VELY_RANGE / 2.0);
         // build ball entity and add to world
-        if i % 2 == 0 {
+        if i % 5 > 0 {
             Ball::build(world, x, y, vx, vy);
         }
         else {

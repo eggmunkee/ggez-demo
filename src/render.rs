@@ -19,6 +19,8 @@ impl Renderer {
     pub fn circs(game_state: &mut GameState, ctx: &mut Context) -> Result<(),()> {
         let mut rng = rand::thread_rng();
 
+        
+
         match (graphics::Mesh::new_circle(
             ctx,
             graphics::DrawMode::fill(),
@@ -31,7 +33,7 @@ impl Renderer {
             ctx,
             graphics::DrawMode::fill(),
             graphics::Rect::from([-10.0,-10.0,10.0,10.0]),
-            graphics::WHITE,
+            graphics::BLACK,
         )) {
             (Ok(circle),Ok(rect)) => {
                 use specs::join::Join;
