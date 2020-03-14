@@ -69,8 +69,8 @@ impl PlayerEntity {
         let entity = world.create_entity()
         .with(Position { x: x, y: y })
         .with(Velocity { x: 0.0, y: 0.0, gravity: false })
-        .with(DisplayComp { circle: false, display_type: DisplayCompType::DrawSelf(Self::draw) })
-        .with(CharacterDisplayComponent::new(ctx, &"/icon.png".to_string()))
+        .with(DisplayComp { circle: false, display_type: DisplayCompType::DrawSelf })
+        .with(CharacterDisplayComponent::new(ctx, &"/blob.png".to_string()))
         .with(Collision::new_square(5.0))
         .with(player_comp)
         .build();

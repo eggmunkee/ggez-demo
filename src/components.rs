@@ -36,11 +36,11 @@ impl Component for Velocity {
     type Storage = VecStorage<Self>;
 }
 
-pub type draw_fn = fn(game_state: &mut GameState, entity: &Entity, ctx: &mut Context) -> GameResult<()>;
+//pub type draw_fn = fn(game_state: &mut GameState, entity: &Entity, ctx: &mut Context) -> GameResult<()>;
 
 pub enum DisplayCompType {
     DrawCircle,
-    DrawSelf(draw_fn)
+    DrawSelf
 }
 impl fmt::Debug for DisplayCompType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -49,7 +49,7 @@ impl fmt::Debug for DisplayCompType {
             DisplayCompType::DrawCircle => {
                 f.write_str("DrawCircle")?;
             },
-            DisplayCompType::DrawSelf(_) => {
+            DisplayCompType::DrawSelf => {
                 f.write_str("DrawSelf")?;
             }
         }

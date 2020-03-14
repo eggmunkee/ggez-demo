@@ -18,7 +18,7 @@ fn init_world(world: &mut World, ctx: &mut Context) {
 
     PlayerEntity::build(world, ctx, 400.0, 20.0);
 
-    for i in 0..75 {
+    for i in 0..25 {
         let x: f32 = rng.gen::<f32>() * POSX_RANGE;
         let y: f32 = rng.gen::<f32>() * POSY_RANGE;
         let vx: f32 = (rng.gen::<f32>() * VELX_RANGE) - (VELX_RANGE / 2.0);

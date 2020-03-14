@@ -41,10 +41,10 @@ impl Collidable for Collision {
     fn pt_block_check(&self, check_point: &Point2<f32>) -> bool {
         let pt = Point2::new(0.0f32,0.0);
         let d = distance(&pt, check_point);
-        if (d < 15.0) {
+        if (d < 55.0) {
             println!("Block passed for (0,0) and {:?}", check_point);
         }
-        d < 15.0
+        d < 55.0
     }
     fn pt_vector_check(&self, check_point: &Point2<f32>, vector: &Vector2<f32>) -> bool {
         true

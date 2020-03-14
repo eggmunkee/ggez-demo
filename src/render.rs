@@ -49,7 +49,7 @@ impl Renderer {
                 let mut draw_ok = true;
                 // iterator positions and entities together read-only
                 for (pos, ent, disp) in (&pos, &ent, &disp).join() {
-                    println!("Display type: {:?}", disp);
+                    //println!("Display type: {:?}", disp);
                     if let DisplayCompType::DrawCircle = disp.display_type {
                         if disp.circle {
                             let mut col_vals: (u8,u8,u8) = rng.gen();
@@ -79,7 +79,7 @@ impl Renderer {
 
                         }
                     }
-                    else if let DisplayCompType::DrawSelf(draw_func) = disp.display_type {
+                    else if let DisplayCompType::DrawSelf = disp.display_type {
                         //draw_func(game_state, &ent, ctx);
                         //rend_list.push(disp);
                     }

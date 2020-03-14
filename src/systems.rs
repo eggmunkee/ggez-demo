@@ -148,7 +148,7 @@ impl<'a> System<'a> for InputSystem {
                 vel.x = vec_amt;
             }
             else {
-                vel.x = 0.0;
+                vel.x = vel.x * 0.90;
             }
             if input.dirs_pressed[2] || input.jump_pressed {
                 vel.y = -vec_amt;
@@ -157,7 +157,7 @@ impl<'a> System<'a> for InputSystem {
                 vel.y = vec_amt;
             }
             else {
-                vel.y = 0.0;
+                vel.y = vel.y * 0.90;
             }
         }
     }
@@ -189,13 +189,14 @@ impl<'a> System<'a> for InterActorSys {
         //let blocks = Vec::<[f64;4]>::new();
 
         // iterator over velocities with player components and input
-        for (_pos, mut _vel, _coll, _e) in (&pos, &mut vel, &collision, &ent).join() {     
+        for (pos, mut vel, coll, _e) in (&pos, &mut vel, &collision, &ent).join() {     
             //match ent {
-            let pt = na::Point2::new(100.0f32,100.0);
-            _coll.pt_block_check(&pt);
+            let pt = na::Point2::new(pos.x,pos.y);
+            if coll.pt_block_check(&pt) {
+                vel.x += (rng.gen::<f32>() * 20.0) - 10.0;
+                vel.y += (rng.gen::<f32>() * 20.0) - 10.0;
+            }
             //} 
-            _vel.x += (rng.gen::<f32>() * 20.0) - 10.0;
-            _vel.y += (rng.gen::<f32>() * 20.0) - 10.0;
             //println!("InterActor sys proc for entity: {}", &e.id());   
         }
 
