@@ -1,11 +1,12 @@
 
+use std::collections::hash_map::*;
 use ggez;
-use ggez::event::{self, Axis, Button, GamepadId, KeyCode, KeyMods, MouseButton};
-use ggez::graphics;
+use ggez::event::{self, KeyCode, KeyMods, MouseButton};
+//use ggez::graphics;
 use ggez::nalgebra as na;
-use ggez::{Context, GameResult};
+use ggez::{Context, GameResult, GameError};
 use ggez::conf::{NumSamples,WindowSetup};
-use ggez::graphics::{Color,set_window_title};
+use ggez::graphics::{Color,Image,set_window_title};
 
 use specs::{Builder, Component, DispatcherBuilder, Dispatcher,// ReadStorage, WriteStorage, 
     System, VecStorage, World, WorldExt, RunNow};
@@ -16,6 +17,7 @@ use rand::prelude::*;
 //use crate::components::{Position,Velocity,DisplayComp};
 //use systems::{};
 use crate::world::{create_world,create_dispatcher};
+//use crate::resources::{ImageResources};
 
 use crate::render;
 use crate::input::{InputMap,MouseInput};
@@ -33,29 +35,82 @@ pub struct GameState<'a> {
     pub current_state: State,
     pub dispatcher: Dispatcher<'a,'a>,
     pub world: World,
+    //pub image_lookup: HashMap<String,usize>,
+    //pub images: Vec<Image>
 }
 
 impl<'a> GameState<'a> {
-    pub fn new() -> GameResult<GameState<'static>> {
+    pub fn new(ctx: &mut Context) -> GameResult<GameState<'static>> {
         
         // Create main state instance with dispatcher and world
         let mut s = GameState { 
             current_state: State::Running,
             dispatcher: create_dispatcher(), 
-            world: create_world() 
+            world: create_world(ctx),
+            // image_lookup: HashMap::<String,usize>::new(),
+            // images: Vec::<Image>::new(),
         };
-        s.pause();
+        //s.pause();
 
         // Perform initial dispatch and update world
         println!("Dispatcher & World init");
         s.dispatcher.dispatch(&s.world);
         s.world.maintain();
 
+        // Tests adding images to the image resources Resource
+        // if let Some(img_res) = s.world.get_mut::<ImageResources>() {
+        //     let img_path = String::from("/icon.png");
+        //     // check for image existence
+        //     //println!("ImageResources has {}? {}", &img_path, &(img_res.has_image(img_path.clone())) );
+
+        //     // load image once (if not set)
+        //     img_res.load_image(img_path.clone(), ctx);
+        //     //println!("ImageResources has {}? {}", &img_path, &(img_res.has_image(img_path.clone())) );
+
+        //     // get image reference from path
+        //     let img : &Image = img_res.image_ref(img_path, ctx).unwrap();
+        //     println!("Image: {:?}", img);
+        //     drop(img);
+
+        // }
+
         Ok(s)
     }
+
+    // pub fn has_image(&mut self, path:String) -> bool {
+    //     return self.image_lookup.contains_key(&path);
+    // }
+
+    // pub fn load_image(&mut self, path:String, ctx: &mut Context) -> GameResult<()> {
+    //     let entry = self.image_lookup.entry(path.clone());
+    //     if let Entry::Vacant(_) = entry {
+    //         let image = Image::new(ctx, path.clone())?;
+    //         let new_idx = self.images.len();
+    //         self.images.push(image);
+    //         self.image_lookup.insert(path.clone(), new_idx);
+    //         //()
+    //     }
+    //     Ok(()) // ok if already loaded
+    // }
+
+    // pub fn image_ref(&mut self, path:String) -> GameResult<&mut Image> {
+        
+    //     //self.load_image(path.clone(), ctx)?;
+
+    //     match self.image_lookup.entry(path.clone()) {
+    //         Entry::Occupied(o) => {
+    //             //let o = o;
+    //             let index = o.get().clone();
+    //             let image = &mut self.images[index];
+    //             Ok(image)
+    //         },
+    //         _ => Err(GameError::ResourceLoadError("Got image_ref for missing image".to_string()))
+    //     }
+    // }
 }
 
 impl<'a> GameState<'a> {
+    #[allow(dead_code)]
     pub fn pause(&mut self) {
         let curr_st = self.current_state;
         match curr_st {
@@ -63,7 +118,7 @@ impl<'a> GameState<'a> {
             _ => {}
         }        
     }
-
+    #[allow(dead_code)]
     pub fn play(&mut self) {
         let curr_st = self.current_state;
         match curr_st {
@@ -166,6 +221,17 @@ impl event::EventHandler for GameState<'static> {
         keycode: KeyCode,
         keymod: KeyMods,
     ) {
+        if keycode == KeyCode::P {
+            match self.current_state {
+                State::Paused => {
+                    self.play();
+                },
+                State::Running => {
+                    self.pause();
+                }
+            }
+        }
+
         InputMap::key_up(&mut self.world, ctx, keycode, keymod);
     }
 

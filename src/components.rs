@@ -1,5 +1,9 @@
-use specs::{Builder, Component, DispatcherBuilder, ReadStorage, WriteStorage, System, VecStorage, World, WorldExt, RunNow};
+use std::fmt;
+use ggez::{Context,GameResult};
+use specs::{Builder, Component,Entity, DispatcherBuilder, ReadStorage, WriteStorage, System, VecStorage, World, WorldExt, RunNow};
 use specs::shred::{Dispatcher};
+
+use crate::game_state::{GameState};
 
 pub mod player;
 pub mod collision;
@@ -32,13 +36,43 @@ impl Component for Velocity {
     type Storage = VecStorage<Self>;
 }
 
+pub type draw_fn = fn(game_state: &mut GameState, entity: &Entity, ctx: &mut Context) -> GameResult<()>;
+
+pub enum DisplayCompType {
+    DrawCircle,
+    DrawSelf(draw_fn)
+}
+impl fmt::Debug for DisplayCompType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        //let ds = f.debug_struct("DisplayCompType");
+        match self {
+            DisplayCompType::DrawCircle => {
+                f.write_str("DrawCircle")?;
+            },
+            DisplayCompType::DrawSelf(_) => {
+                f.write_str("DrawSelf")?;
+            }
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug)]
 pub struct DisplayComp {
     pub circle: bool,
+    pub display_type: DisplayCompType,
+}
+
+impl DisplayComp {
+    fn draw_self(game_state: &mut GameState, entity: &Entity, ctx: &mut Context) -> GameResult<()> {
+        Ok(())
+    }
+
 }
 
 impl Component for DisplayComp {
     type Storage = VecStorage<Self>;
+
 }
 
 // Register all possible components for world

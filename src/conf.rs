@@ -5,16 +5,16 @@ pub fn get_window_setup() -> WindowSetup {
     WindowSetup {
         title: "GGEZ ~~~ DEMO".to_owned(),
         samples: NumSamples::Two,
-        vsync: false,
-        icon: "".to_owned(),
+        vsync: true,
+        icon: "/icon.png".to_owned(), // set OS window icon
         srgb: true,
     }
 }
 
 pub fn get_window_mode() -> WindowMode {
     WindowMode {
-        width: 800.0,
-        height: 600.0,
+        width: 1000.0,
+        height: 800.0,
         maximized: false,
         fullscreen_type: FullscreenType::Windowed,
         borderless: false,

@@ -1,4 +1,6 @@
 
+use ggez::nalgebra as na;
+use rand::prelude::*;
 use specs::{
     //Builder, DispatcherBuilder,
     Entities,
@@ -9,8 +11,9 @@ use specs::{
 
 use crate::resources::{InputResource};
 use crate::components::{Position,Velocity,GridLoc};
-use crate::components::collision::{Collision};
+use crate::components::collision::{Collision,Collidable};
 use crate::components::player::{PlayerComponent};
+
 
 /**** SYSTEMS *********************************/
 
@@ -182,12 +185,18 @@ impl<'a> System<'a> for InterActorSys {
 
     fn run(&mut self, (mut pos, mut vel, collision, ent): Self::SystemData) {
         use specs::Join;
+        let mut rng = rand::thread_rng();
+        //let blocks = Vec::<[f64;4]>::new();
 
-        let blocks = Vec::<[f64;4]>::new();
-        
         // iterator over velocities with player components and input
-        for (_pos, _vel, _coll, e) in (&pos, &vel, &collision, &ent).join() {        
-            println!("InterActor sys proc for entity: {}", &e.id());   
+        for (_pos, mut _vel, _coll, _e) in (&pos, &mut vel, &collision, &ent).join() {     
+            //match ent {
+            let pt = na::Point2::new(100.0f32,100.0);
+            _coll.pt_block_check(&pt);
+            //} 
+            _vel.x += (rng.gen::<f32>() * 20.0) - 10.0;
+            _vel.y += (rng.gen::<f32>() * 20.0) - 10.0;
+            //println!("InterActor sys proc for entity: {}", &e.id());   
         }
 
     }

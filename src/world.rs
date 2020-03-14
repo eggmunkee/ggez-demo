@@ -1,3 +1,4 @@
+use ggez::{Context};
 use specs::{World, WorldExt}; // Builder, Component, ReadStorage, System, VecStorage, RunNow
 use specs::shred::{Dispatcher, DispatcherBuilder};
 use rand::prelude::*;
@@ -8,14 +9,14 @@ use crate::entities::player::{PlayerEntity};
 use crate::entities::ball::{Ball};
 use crate::systems::*;
 
-fn init_world(world: &mut World) {
+fn init_world(world: &mut World, ctx: &mut Context) {
     let mut rng = rand::thread_rng();
     const POSX_RANGE: f32 = 900.0;
     const POSY_RANGE: f32 = 600.0;
     const VELX_RANGE: f32 = 375.0;
     const VELY_RANGE: f32 = 125.0;
 
-    PlayerEntity::build(world, 400.0, 20.0);
+    PlayerEntity::build(world, ctx, 400.0, 20.0);
 
     for i in 0..75 {
         let x: f32 = rng.gen::<f32>() * POSX_RANGE;
@@ -33,7 +34,7 @@ fn init_world(world: &mut World) {
     }
 }
 
-pub fn create_world<'a>() -> World {
+pub fn create_world<'a>(ctx: &mut Context) -> World {
     let mut world = World::new();
     
     add_resources(&mut world);
@@ -42,7 +43,7 @@ pub fn create_world<'a>() -> World {
     register_components(&mut world);
 
     // Create initial world entities
-    init_world(&mut world);
+    init_world(&mut world, ctx);
 
     world
 }
@@ -51,9 +52,9 @@ pub fn create_dispatcher<'a>() -> Dispatcher<'a,'a> {
     // build disptacher by including all needed systems
     let dispatcher = DispatcherBuilder::new()
     .with(InputSystem::new(), "input_system", &[])
-    .with(UpdatePos, "update_pos", &["input_system"])
-    .with(GravSys, "grav_sys", &["update_pos"])
+    .with(GravSys, "grav_sys", &["input_system"])
     .with(InterActorSys::new(), "interactor_sys", &["grav_sys"])
+    .with(UpdatePos, "update_pos", &["interactor_sys"])
     //.with(SumSys, "sum_sys", &["update_pos"])
     .build();
 

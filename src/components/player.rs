@@ -1,4 +1,6 @@
-
+use ggez::{Context};
+use ggez::graphics::{Image};
+use ggez::nalgebra as na;
 use specs::{Builder, Component, DispatcherBuilder, ReadStorage, WriteStorage, System, VecStorage, DenseVecStorage, World, WorldExt, RunNow};
 use specs::shred::{Dispatcher};
 
@@ -26,8 +28,40 @@ impl PlayerComponent {
 }
 
 
+#[derive(Debug)]
+pub struct CharacterDisplayComponent {
+    pub image: Image, // component owns image
+    pub path: String,
+}
+impl Component for CharacterDisplayComponent {
+    type Storage = DenseVecStorage<Self>;
+}
+
+impl CharacterDisplayComponent {
+    pub fn new(ctx: &mut Context, char_img: &String) -> CharacterDisplayComponent {
+        let image = Image::new(ctx, char_img.clone()).unwrap();
+
+        CharacterDisplayComponent {
+            image: image,
+            path: char_img.clone(),
+        }
+    }
+    pub fn draw(&self, ctx: &mut Context, pos: na::Point2::<f32>) {
+        let mut draw_ok = true;
+        let w = self.image.width();
+        let h = self.image.height();
+        let draw_pos = na::Point2::<f32>::new(pos.x - (w as f32 / 2.0), pos.y - (h as f32 / 2.0));
+        if let Err(_) = ggez::graphics::draw(ctx, &self.image, (draw_pos,)) { // add back x/y pos  //
+            draw_ok = false;
+        }
+        
+    }
+}
+
+
 // Register all possible components for world
 pub fn register_components(world: &mut World) {
     // register components
     world.register::<PlayerComponent>();
+    world.register::<CharacterDisplayComponent>();
 }

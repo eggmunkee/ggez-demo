@@ -1,6 +1,9 @@
 // external crates
+use std::env;
+use std::path;
 use ggez;
 use ggez::event;
+use ggez::filesystem;
 use ggez::{GameResult};
 
 // ================== ROOT MODULES ========================
@@ -32,13 +35,26 @@ use crate::conf::*;
 // Do setup and start main event loop
 pub fn main() -> GameResult {
     // get ggez context build - builds window app
-    let cb = ggez::ContextBuilder::new("super_simple", "ggez")
+    let mut cb = ggez::ContextBuilder::new("super_simple", "ggez")
         .window_setup(get_window_setup())
         .window_mode(get_window_mode());
+
+    // insert cargo manifest dir /resources into resources paths
+    if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
+        let mut path = path::PathBuf::from(manifest_dir);
+        path.push("resources");
+        println!("Adding path {:?}", path);
+        cb = cb.add_resource_path(path);
+    }        
     // build
     let (ctx, event_loop) = &mut cb.build()?;
+
+    //ggez::graphics::set_window_icon(ctx, Some("/icon.png"))?;
     // create app's state
-    let state = &mut crate::game_state::GameState::new()?;
+    let state = &mut crate::game_state::GameState::new(ctx)?;
+
+    
+    filesystem::print_all(ctx);
     // run event loop
     event::run(ctx, event_loop, state)
 }

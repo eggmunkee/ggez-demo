@@ -149,6 +149,7 @@ impl InputMap {
                     //input.set;
                     input.set_mouse_down(true, 1);
                     println!("Mouse button pressed: {:?}, x: {}, y: {}", &inp, &input.mouse_x, &input.mouse_y);
+                    //_ctx.current_state;
                 },
                 MouseInput::Right => {
                     let mut input = world.fetch_mut::<InputResource>();
