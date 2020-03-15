@@ -1,10 +1,12 @@
 use std::fmt;
 use ggez::{Context,GameResult};
+use ggez::nalgebra as na;
 use specs::{Builder, Component,Entity, DispatcherBuilder, ReadStorage, WriteStorage, System, VecStorage, World, WorldExt, RunNow};
 use specs::shred::{Dispatcher};
 
 use crate::game_state::{GameState};
 
+pub mod ball;
 pub mod player;
 pub mod collision;
 // DEFINE COMMON COMPONENTS
@@ -15,7 +17,7 @@ pub struct GridLoc {
     pub col: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug,Copy,Clone)]
 pub struct Position {
     pub x: f32,
     pub y: f32,
@@ -25,7 +27,7 @@ impl Component for Position {
     type Storage = VecStorage<Self>;
 }
 
-#[derive(Debug)]
+#[derive(Debug,Copy,Clone)]
 pub struct Velocity {
     pub x: f32,
     pub y: f32,
@@ -75,6 +77,12 @@ impl Component for DisplayComp {
 
 }
 
+
+pub trait RenderTrait {    
+    fn draw(&self, ctx: &mut Context, ent: Option<u32>, pos: na::Point2::<f32>);
+}
+
+
 // Register all possible components for world
 pub fn register_components(world: &mut World) {
     // register components
@@ -84,5 +92,6 @@ pub fn register_components(world: &mut World) {
     
     // sub-module components
     self::collision::register_components(world);
+    self::ball::register_components(world);
     self::player::register_components(world);
 }

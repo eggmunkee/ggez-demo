@@ -11,11 +11,31 @@ use crate::components::collision::{Collision};
 use crate::components::player::{PlayerComponent,CharacterDisplayComponent};
 use crate::systems::*;
 
-pub struct PlayerEntity {
-    entityIndex: usize
+pub struct PlayerEntityBuilder;
+
+impl PlayerEntityBuilder {
+    pub fn build(world: &mut World, ctx: &mut Context, x: f32, y: f32) -> Entity {
+
+        let mut player_comp = PlayerComponent::new(ctx, &"/blob.png".to_string());
+        player_comp.player_name.clear();
+        player_comp.player_name.push_str("Noah");
+        let entity = world.create_entity()
+        .with(Position { x: x, y: y })
+        .with(Velocity { x: 0.0, y: 0.0, gravity: true })
+        .with(DisplayComp { circle: false, display_type: DisplayCompType::DrawSelf })
+        .with(CharacterDisplayComponent::new(ctx, &"/blob.png".to_string()))
+        .with(Collision::new_square(5.0))
+        .with(player_comp)
+        .build();
+
+        //let entId = entity.id();
+
+        entity
+    }
+
 }
 
-impl PlayerEntity {
+/*
     // pub fn draw(game_state: &mut GameState, entity: &Entity, ctx: &mut Context) -> GameResult<()> {
     //     println!("PlayerEntity - draw()");
     //     //let mut image_res = game_state.world.fetch::<ImageResources>();
@@ -43,9 +63,7 @@ impl PlayerEntity {
 
     // }
 
-    pub fn build(world: &mut World, ctx: &mut Context, x: f32, y: f32) -> Entity {
-
-        // Load any player related images here
+// Load any player related images here
         // 
         // if let Some(img_res) = world.get_mut::<ImageResources>() {
         //     let img_path = String::from("/icon.png");
@@ -63,21 +81,5 @@ impl PlayerEntity {
 
         // }
 
-        let mut player_comp = PlayerComponent::new();
-        player_comp.player_name.clear();
-        player_comp.player_name.push_str("Noah");
-        let entity = world.create_entity()
-        .with(Position { x: x, y: y })
-        .with(Velocity { x: 0.0, y: 0.0, gravity: false })
-        .with(DisplayComp { circle: false, display_type: DisplayCompType::DrawSelf })
-        .with(CharacterDisplayComponent::new(ctx, &"/blob.png".to_string()))
-        .with(Collision::new_square(5.0))
-        .with(player_comp)
-        .build();
+*/
 
-        let entId = entity.id();
-
-        entity
-    }
-
-}

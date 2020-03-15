@@ -1,19 +1,26 @@
+// use std::fmt;
+// use std::fmt::{Display};
 use std::collections::{HashMap};
-use std::collections::hash_map::{Entry,OccupiedEntry,VacantEntry};
-use ggez::graphics::{Image};
+use std::collections::hash_map::{Entry};
+use ggez::graphics;
+use ggez::graphics::{Image,Font};
 use ggez::{Context,GameResult,GameError};
-use specs::{Builder, Component, ReadStorage, System, VecStorage,World, WorldExt, RunNow};
+use specs::{World};
 
+#[allow(dead_code)]
 pub struct ImageResources {
     pub image_lookup: HashMap<String,usize>,
-    pub images: Vec<Image>
+    pub images: Vec<Image>,
+    pub font: Font,
 }
 
 impl ImageResources {
+    #[allow(dead_code)]
     pub fn has_image(&mut self, path:String) -> bool {
         return self.image_lookup.contains_key(&path);
     }
 
+    #[allow(dead_code)]
     pub fn load_image(&mut self, path:String, ctx: &mut Context) -> GameResult<()> {
         let entry = self.image_lookup.entry(path.clone());
         if let Entry::Vacant(_) = entry {
@@ -26,6 +33,7 @@ impl ImageResources {
         Ok(()) // ok if already loaded
     }
 
+    #[allow(dead_code)]
     pub fn image_ref<'a>(&mut self, path:String) -> GameResult<&mut Image> {
         
         //self.load_image(path.clone(), ctx)?;
@@ -42,14 +50,23 @@ impl ImageResources {
     }
 }
 
+#[derive(Debug)]
+pub enum WorldAction {
+    AddCircle,
+    None
+}
+impl Default for WorldAction {
+    fn default() -> Self { WorldAction::None }
+}
 
-#[derive(Default, Debug)]
+#[derive(Default,Debug)]
 pub struct InputResource {
     pub dirs_pressed: [bool;4],
     pub jump_pressed: bool,
     pub mouse_x: f32,
     pub mouse_y: f32,
     pub mouse_down: [bool;3],
+    pub actions: Vec::<WorldAction>,
 }
 
 impl InputResource {
@@ -83,19 +100,48 @@ impl InputResource {
             self.mouse_down[button_index] = mouse_down;
         }
     }
+    // pub fn clear_actions(&mut self) {
+    //     self.actions.clear();
+    // }
+    // pub fn add_action(&mut self, action: WorldAction) {
+    //     println!("Add action: {:?}", &action);
+    //     match action {
+    //         WorldAction::None => {},
+    //         _a => { self.actions.push(_a); }
+    //     }
+    // }
+    // pub fn unpop_action(&mut self) -> WorldAction {
+    //     if self.actions.len() == 0 {
+    //         //println!("UnPop action: NONE");
+    //         return WorldAction::None;
+    //     }
+    //     let action_spl = self.actions.splice(1.., Vec::new());
+
+    //     for action in action_spl {
+    //         println!("UnPop action: {:?}", &action);
+    //         return action;
+    //     }
+
+    //     WorldAction::None
+    // }
 }
 
-pub fn add_resources(world: &mut World) {
+pub fn add_resources(world: &mut World, ctx: &mut Context) {
     world.insert(InputResource { 
         dirs_pressed: [false,false,false,false],
         jump_pressed: false,
         mouse_x: 0.0,
         mouse_y: 0.0,
         mouse_down: [false,false,false],
+        actions: Vec::new(),
     });
 
-    // world.insert(ImageResources {
-    //     image_lookup: HashMap::new(),
-    //     images: Vec::<Image>::new()
-    // })
+
+    let font = graphics::Font::new(ctx, "/FreeMonoBold.ttf").unwrap();
+
+    world.insert(ImageResources {
+        image_lookup: HashMap::new(),
+        images: Vec::<Image>::new(),
+        font: font,
+    })
 }

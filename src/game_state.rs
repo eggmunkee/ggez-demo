@@ -1,6 +1,7 @@
 
 use std::collections::hash_map::*;
 use ggez;
+use ggez::graphics;
 use ggez::event::{self, KeyCode, KeyMods, MouseButton};
 //use ggez::graphics;
 use ggez::nalgebra as na;
@@ -13,7 +14,7 @@ use specs::{Builder, Component, DispatcherBuilder, Dispatcher,// ReadStorage, Wr
 use rand::prelude::*;
 // =====================================
 
-//use crate::resources::{InputResource};
+use crate::resources::{InputResource,WorldAction};
 //use crate::components::{Position,Velocity,DisplayComp};
 //use systems::{};
 use crate::world::{create_world,create_dispatcher};
@@ -35,20 +36,27 @@ pub struct GameState<'a> {
     pub current_state: State,
     pub dispatcher: Dispatcher<'a,'a>,
     pub world: World,
+    pub font: graphics::Font,
     //pub image_lookup: HashMap<String,usize>,
     //pub images: Vec<Image>
+    pub paused_text: graphics::Text,
 }
 
 impl<'a> GameState<'a> {
     pub fn new(ctx: &mut Context) -> GameResult<GameState<'static>> {
         
+        let font = graphics::Font::new(ctx, "/FreeMonoBold.ttf")?;
+        let text = graphics::Text::new(("-- Paused --", font, 48.0));
+
         // Create main state instance with dispatcher and world
         let mut s = GameState { 
             current_state: State::Running,
             dispatcher: create_dispatcher(), 
             world: create_world(ctx),
+            font: font,
             // image_lookup: HashMap::<String,usize>::new(),
             // images: Vec::<Image>::new(),
+            paused_text: text,
         };
         //s.pause();
 
@@ -129,17 +137,28 @@ impl<'a> GameState<'a> {
 }
 
 impl event::EventHandler for GameState<'static> {
-    fn update(&mut self, _ctx: &mut Context) -> GameResult {
+    fn update(&mut self, ctx: &mut Context) -> GameResult {
 
-        // Handle any GameState
+        // Yield process to os
+        ggez::timer::yield_now();
+   
+        // Only update world state when game is running (not paused)
+        match &self.current_state {
+            State::Running => {
 
-        // Get world and dispatcher to increment the entity system
-        let world = &mut self.world;
-        let dispatcher = &mut self.dispatcher;
-        // Call update on the world event dispatcher
-        dispatcher.dispatch(&world);
-        // Update the world state after dispatch changes
-        world.maintain();
+                // Get world and dispatcher to increment the entity system
+                let world = &mut self.world;
+                let dispatcher = &mut self.dispatcher;
+                // Call update on the world event dispatcher
+                dispatcher.dispatch(&world);
+                // Update the world state after dispatch changes
+                world.maintain();
+
+            },
+            _ => {
+                
+            }
+        }
 
         // always ok result
         Ok(())
@@ -221,6 +240,7 @@ impl event::EventHandler for GameState<'static> {
         keycode: KeyCode,
         keymod: KeyMods,
     ) {
+
         if keycode == KeyCode::P {
             match self.current_state {
                 State::Paused => {
@@ -230,6 +250,12 @@ impl event::EventHandler for GameState<'static> {
                     self.pause();
                 }
             }
+        }
+        else if keycode == KeyCode::J {
+            // Get world action if any
+            //println!("Processing AddCircle action");
+            crate::entities::ball::BallBuilder::build(&mut self.world, ctx, 100.0, 400.0, -2.0, 0.0);
+
         }
 
         InputMap::key_up(&mut self.world, ctx, keycode, keymod);
@@ -247,4 +273,7 @@ impl event::EventHandler for GameState<'static> {
         }
     }
 
+    fn resize_event(&mut self, _ctx: &mut Context, _width: f32, _height: f32) {
+        println!("Resized: {}, {}", &_width, &_height);
+    }
 }

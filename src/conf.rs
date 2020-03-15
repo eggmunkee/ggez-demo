@@ -4,7 +4,7 @@ use ggez::conf::{WindowSetup,WindowMode,FullscreenType,NumSamples};
 pub fn get_window_setup() -> WindowSetup {
     WindowSetup {
         title: "GGEZ ~~~ DEMO".to_owned(),
-        samples: NumSamples::Two,
+        samples: NumSamples::Eight,
         vsync: true,
         icon: "/icon.png".to_owned(), // set OS window icon
         srgb: true,

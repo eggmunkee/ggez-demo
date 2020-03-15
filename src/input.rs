@@ -4,7 +4,7 @@ use ggez::{Context};
 use ggez::event::{KeyCode,KeyMods};
 use specs::{World, WorldExt};
 
-use crate::resources::{InputResource};
+use crate::resources::{InputResource,WorldAction};
 
 #[derive(Debug)]
 pub enum MouseInput {
@@ -17,6 +17,7 @@ pub enum InputKey {
     Up,
     Down,
     SpaceAction,
+    AddCircle,
     Exit
 }
 
@@ -58,6 +59,9 @@ impl InputMap {
             },
             KeyCode::Space => {
                 Some(InputKey::SpaceAction)
+            },
+            KeyCode::J => {
+                Some(InputKey::AddCircle)
             },
             KeyCode::Escape => {
                 Some(InputKey::Exit)
@@ -129,6 +133,10 @@ impl InputMap {
                     let mut input = world.fetch_mut::<InputResource>();
                     input.set_jump(false);
                 },
+                // InputKey::AddCircle => {
+                //     let mut input = world.fetch_mut::<InputResource>();
+                //     input.add_action(WorldAction::AddCircle);
+                // },
                 _ => {}
             },
             _ => {}
