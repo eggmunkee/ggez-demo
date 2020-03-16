@@ -5,7 +5,7 @@ use ggez::graphics;
 use ggez::nalgebra as na;
 use ggez::graphics::{Color,DrawParam,set_window_title};
 
-use specs::{WorldExt};
+use specs::{Entity,World,WorldExt};
 use specs::join::Join;
 use rand::prelude::*;
 
@@ -19,9 +19,38 @@ use crate::game_state::{GameState,State};
 // pub mod square;
 pub struct Renderer;
 
+// impl RenderTrait for Renderer {
+//     fn draw(&self, ctx: &mut Context, world: &World, entity: Option<u32>, pos: na::Point2<f32>) {
+
+//     }
+// }
+
 impl Renderer {
 
-    pub fn draw(game_state: &mut GameState, ctx: &mut Context) -> GameResult {
+    fn call_renderer(ctx: &mut Context, world: &World, entity: Entity, pt: &na::Point2<f32>) {
+        
+        //let (entity, render) = Self::get_renderer(world, entity);
+        {
+            //let world = &.world;
+            let ch_disp_comp = world.read_storage::<CharacterDisplayComponent>();
+            let ch_disp_comp_res = ch_disp_comp.get(entity);
+            if let Some(res) = ch_disp_comp_res {
+                //render = res;
+                res.draw(ctx, &world, Some(entity.id()), pt.clone());
+            }
+        }
+
+        {
+            let ball_disp_comp = world.read_storage::<BallDisplayComponent>();
+            let ball_disp_comp_res = ball_disp_comp.get(entity);
+            if let Some(res) = ball_disp_comp_res {
+                //res.draw(ctx, &mut game_state.world, Some(ent.clone()), pt.clone());
+                res.draw(ctx, &world, Some(entity.id()), pt.clone());
+            }
+        }
+    }
+
+    pub fn render_frame(game_state: &GameState, world: &World, ctx: &mut Context) -> GameResult {
         
         graphics::clear(ctx, [1.0, 1.0, 1.0, 1.0].into());
 
@@ -67,17 +96,31 @@ impl Renderer {
         for (ent, pt) in render_objects.iter() {
             let entity = game_state.world.entities().entity(ent.clone()); //  ;;fetch::<BallDisplayComponent>();
             if entity.gen().is_alive() {
-                let ch_disp_comp = game_state.world.read_storage::<CharacterDisplayComponent>();
-                let ch_disp_comp_res = ch_disp_comp.get(entity);
-                if let Some(res) = ch_disp_comp_res {
-                    res.draw(ctx, Some(ent.clone()), pt.clone());
-                }
+                //let render : &mut RenderTrait;
 
-                let ball_disp_comp = game_state.world.read_storage::<BallDisplayComponent>();
-                let ball_disp_comp_res = ball_disp_comp.get(entity);
-                if let Some(res) = ball_disp_comp_res {
-                    res.draw(ctx, Some(ent.clone()), pt.clone());
-                }
+                Self::call_renderer(ctx, world, entity, pt);
+
+                //let (entity, render) = Self::get_renderer(world, entity);
+                // {
+                //     //let world = &.world;
+                //     let ch_disp_comp = world.read_storage::<CharacterDisplayComponent>();
+                //     let ch_disp_comp_res = ch_disp_comp.get(entity);
+                //     if let Some(res) = ch_disp_comp_res {
+                //         //render = res;
+                //         res.draw(ctx, &world, Some(ent.clone()), pt.clone());
+                //     }
+                // }
+
+                // {
+                //     let ball_disp_comp = game_state.world.read_storage::<BallDisplayComponent>();
+                //     let ball_disp_comp_res = ball_disp_comp.get(entity);
+                //     if let Some(res) = ball_disp_comp_res {
+                //         //res.draw(ctx, &mut game_state.world, Some(ent.clone()), pt.clone());
+                //         res.draw(ctx, &world, Some(ent.clone()), pt.clone());
+                //     }
+                // }
+
+                
             }
             //rend_trt.draw(game_state, ctx, Some(ent.clone()), pt.clone());
         }

@@ -166,7 +166,8 @@ impl event::EventHandler for GameState<'static> {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         // Call rendering module        
-        render::Renderer::draw(self, ctx)
+
+        render::Renderer::render_frame(self, &self.world, ctx)
     }
 
     fn mouse_button_down_event(&mut self, ctx: &mut Context, button: MouseButton, x: f32, y: f32) {

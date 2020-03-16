@@ -73,7 +73,7 @@ impl BallDisplayComponent {
 // }
 
 impl super::RenderTrait for BallDisplayComponent {
-    fn draw(&self, ctx: &mut Context, ent: Option<u32>, pos: na::Point2::<f32>) {
+    fn draw(&self, ctx: &mut Context, world: &World, ent: Option<u32>, pos: na::Point2::<f32>) {
         //println!("BallRender...");
         let mut rng = rand::thread_rng();
 

@@ -31,9 +31,10 @@ impl InterActorSys {
         (d < touch_dist, d)
     }
 
-    fn actors_push(pos_i: &na::Point2<f32>, pos_j: &na::Point2<f32>, svel_i : Option<&mut na::Vector2<f32>>, svel_j : Option<&mut na::Vector2<f32>>) {
-        let impulse : f32 = 70.0;
-        let touch_dist : f32 = 35.0;
+    fn actors_push(pos_i: &na::Point2<f32>, pos_j: &na::Point2<f32>, 
+            svel_i : Option<&mut na::Vector2<f32>>, svel_j : Option<&mut na::Vector2<f32>>) {
+        let impulse : f32 = 120.0;
+        let touch_dist : f32 = 45.0;
         let friction_ratio : f32 = 0.90;
         //let pt = na::Point2::new(pos_i.x,pos_i.y);
         let (check, dist) = Self::dist_check(&pos_i, &pos_j, touch_dist);
