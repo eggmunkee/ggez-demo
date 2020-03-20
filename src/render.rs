@@ -93,6 +93,8 @@ impl Renderer {
         // add player render object to end - drawn very last
         render_objects.push(r0);
 
+        let render_count = render_objects.len();
+
         for (ent, pt) in render_objects.iter() {
             let entity = game_state.world.entities().entity(ent.clone()); //  ;;fetch::<BallDisplayComponent>();
             if entity.gen().is_alive() {
@@ -130,13 +132,17 @@ impl Renderer {
             State::Paused => {
                 let mut draw_ok = true;
 
+                let (w, h) = (game_state.window_w, game_state.window_h);
+                let cent_x = w as f32 / 2.0;
+                let cent_y = h as f32 / 2.0;                
+
                 // Render paused graphis
                 if let Err(_) = graphics::draw(ctx, &game_state.paused_text, 
-                        (na::Point2::new(298.0,302.0),
+                        (na::Point2::new(cent_x-2.0,cent_y+2.0),
                         Color::new(0.0,0.0,0.0,1.0))) {
                     draw_ok = false;
                 };
-                if let Err(_) = graphics::draw(ctx, &game_state.paused_text, (na::Point2::new(300.0,300.0),
+                if let Err(_) = graphics::draw(ctx, &game_state.paused_text, (na::Point2::new(cent_x,cent_y),
                         Color::new(0.8,0.85,1.0,1.0)) ) {
                     draw_ok = false;
                 };
@@ -151,7 +157,7 @@ impl Renderer {
         // Update framerate on title every 5 frames
         if ggez::timer::ticks(ctx) % 5 == 0 {
             let fps = ggez::timer::fps(ctx);
-            set_window_title(ctx, format!("GGEZ ~~~ DEMO ({:.1} fps)", &fps).as_str());
+            set_window_title(ctx, format!("GGEZ ~~~ DEMO ({:.1} fps for {} render objs)", &fps, &render_count).as_str());
         }
 
         graphics::present(ctx)?;

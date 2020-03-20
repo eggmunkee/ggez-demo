@@ -11,54 +11,45 @@ pub enum CollisionShape {
 #[derive(Debug)]
 pub struct Collision {
     pub shape: CollisionShape,
+    pub mass: f32,
+    pub friction: f32,
 }
 
 impl Collision {
     #[allow(dead_code)]
     pub fn new() -> Collision {
         Collision {
-            shape: CollisionShape::Circle(32.0)
+            shape: CollisionShape::Circle(32.0),
+            mass: 1.0,
+            friction: 0.05,
+        }
+    }
+    pub fn new_specs(m: f32, f: f32) -> Collision {
+        Collision {
+            shape: CollisionShape::Circle(32.0),
+            mass: m,
+            friction: f,
         }
     }
     pub fn new_circle(radius: f32) -> Collision {
         Collision {
-            shape: CollisionShape::Circle(radius)
+            shape: CollisionShape::Circle(radius),
+            mass: 1.0,
+            friction: 0.05,
         }
     }
     pub fn new_square(radius: f32) -> Collision {
         Collision {
-            shape: CollisionShape::Square(radius)
+            shape: CollisionShape::Square(radius),
+            mass: 1.0,
+            friction: 0.05,
         }
-    }
-}
-
-pub trait Collidable {
-    fn pt_block_check(&self, check_point: &Point2<f32>) -> (bool, f32);
-    fn pt_vector_check(&self, check_point: &Point2<f32>, vector: &Vector2<f32>) -> bool;
-}
-
-impl Collidable for Collision {
-    // that point is within block o
-    fn pt_block_check(&self, check_point: &Point2<f32>) -> (bool, f32) {
-        let pt = Point2::new(500.0f32,500.0);
-        let radius = 300.0f32;
-        let d = distance(&pt, check_point);
-        //if d < radius {
-            //println!("Block passed for (0,0) and {:?}", check_point);
-        //}
-
-        (d < radius, d)
-    }
-    fn pt_vector_check(&self, check_point: &Point2<f32>, vector: &Vector2<f32>) -> bool {
-        true
     }
 }
 
 impl Component for Collision {
     type Storage = DenseVecStorage<Self>;
 }
-
-
 
 // Register all possible components for world
 pub fn register_components(world: &mut World) {

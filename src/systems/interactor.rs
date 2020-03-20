@@ -4,11 +4,13 @@ use ggez::nalgebra as na;
 use rand::prelude::*;
 use specs::prelude::*;
 use specs::{WorldExt};
-use ggez::nalgebra::{Point2,Vector2,distance};
+use ggez::nalgebra::{Point2,Vector2,distance,distance_squared};
 
 use crate::resources::{InputResource};
 use crate::components::*;
 use crate::components::collision::*;
+use crate::physics;
+
 
 // handle interactions between interactive actors
 pub struct InterActorSys;
@@ -20,81 +22,23 @@ impl InterActorSys {
 
 impl InterActorSys {
 
-    fn dist_check(pt_1: &Point2<f32>, pt_2: &Point2<f32>, touch_dist: f32) -> (bool, f32) {
-        //let pt = Point2::new(500.0f32,500.0);
-        //let radius = 50.0f32;
-        let d = distance(&pt_1.clone(), &pt_2.clone());
-        //if d < radius {
-            //println!("Block passed for (0,0) and {:?}", check_point);
-        //}
+    // fn dist_check(pt_1: &Point2<f32>, pt_2: &Point2<f32>, touch_dist: f32) -> (bool, f32) {
+    //     //let pt = Point2::new(500.0f32,500.0);
+    //     //let radius = 50.0f32;
+    //     let d = distance_squared(&pt_1.clone(), &pt_2.clone());
+    //     //if d < radius {
+    //         //println!("Block passed for (0,0) and {:?}", check_point);
+    //     //}
+    //     if d < touch_dist.powi(2) {
+    //         (true, d.sqrt())
+    //     }
+    //     else {
+    //         (false, d)
+    //     }
+       
+    // }
 
-        (d < touch_dist, d)
-    }
-
-    fn actors_push(pos_i: &na::Point2<f32>, pos_j: &na::Point2<f32>, 
-            svel_i : Option<&mut na::Vector2<f32>>, svel_j : Option<&mut na::Vector2<f32>>) {
-        let impulse : f32 = 120.0;
-        let touch_dist : f32 = 45.0;
-        let friction_ratio : f32 = 0.90;
-        //let pt = na::Point2::new(pos_i.x,pos_i.y);
-        let (check, dist) = Self::dist_check(&pos_i, &pos_j, touch_dist);
-        if check {
-            let mut imp = impulse;            
-            if dist > 1.0 {
-                let x_dif = (pos_i.x - pos_j.x) / dist;
-                let y_dif = (pos_i.y - pos_j.y) / dist;
-                let overlap_len = touch_dist - dist;
-                let overlap_ratio = overlap_len / touch_dist;
-                let imp = overlap_ratio * impulse;
-                let mut x_imp = imp * x_dif;
-                let mut y_imp = imp * y_dif;
-                //let inv_len = (touch_dist - dist).max(0.0).min(51.0);
-                //let frac = 1.0 / (30.0 * dist); //inv_len / 51.0;
-                if imp > 0.0 {
-                    //imp *= 1.0 - frac;
-
-                    let no_i = match svel_i {
-                        Some(_) => true,
-                        _ => false
-                    };
-                    let no_j = match svel_j {
-                        Some(_) => true,
-                        _ => false
-                    };
-
-
-                    //{
-                    //interact_ct += 1;
-                    // If I has velocity to update, apply impulse
-                    if let Some(mut vel_i) = svel_i {
-                        vel_i.x *= friction_ratio;
-                        vel_i.x += x_imp * 0.5;
-                        vel_i.y *= friction_ratio;
-                        vel_i.y += y_imp * 0.5;
-                        // vel_i.x = 0.0;
-                        // vel_i.y = 0.0;
-                    }
-
-                    // If J has velocity to update, apply impulse
-                    if let Some(vel_j) = svel_j {
-                        if no_i { x_imp *= 2.0; y_imp *= 2.0; }
-                        vel_j.x *= friction_ratio;
-                        vel_j.x -= x_imp * 0.5;
-                        vel_j.y *= friction_ratio;
-                        vel_j.y -= y_imp * 0.5;
-                        // vel_j.x = 0.0;
-                        // vel_j.y = 0.0;
-                    }
-                    //}
-                }
-                // else {
-                //     imp = 0.0;
-                // }
-                
-                //println!("Impulse dist: {}, frac: {}, imp: {}", &dist, &frac, &imp);
-            }
-        }
-    }
+    
 }
 
 impl<'a> System<'a> for InterActorSys {
@@ -107,21 +51,24 @@ impl<'a> System<'a> for InterActorSys {
         use specs::Join;
         let mut rng = rand::thread_rng();
         //let mut blocks = Vec::<(u32,f32,f32,i32,i32)>::new();
-        let mut block_hash = HashMap::<(i32,i32),Vec<(u32,f32,f32,i32,i32)>>::new();
+        // key is col,val of block, value is entity id, position x/y, 
+        let mut block_hash = HashMap::<(i32,i32),Vec<(u32,f32,f32,f32,f32)>>::new();
         let mut check_hash = HashMap::<(u32,u32),bool>::new();
 
         // iterator over velocities with player components and input
-        for (pos, _coll, e) in (&pos, &collision, &ent).join() {     
+        for (pos, coll, e) in (&pos, &collision, &ent).join() {     
 
             let ent_id = e.id();
+            let mass = coll.mass;
+            let friction = coll.friction;
             let px = pos.x;
             let py = pos.y;
-            let buc_a_sz = 50.0f32;
+            let buc_a_sz = 100.0f32;
             let buc_a_x : i32 = (px / buc_a_sz) as i32;
             let buc_a_y : i32 = (py / buc_a_sz) as i32;
 
             // find which neighbor cells to include in
-            let rad = 30.0;
+            let rad = 45.0;
             let l_rem = px - (buc_a_x as f32) * buc_a_sz;
             let r_rem = ((buc_a_x + 1) as f32) * buc_a_sz - px;
             let t_rem = py - (buc_a_y as f32) * buc_a_sz;
@@ -153,16 +100,16 @@ impl<'a> System<'a> for InterActorSys {
                         ent_vec.push((
                             ent_id,
                             px, py,
-                            i,
-                            j,
+                            mass,
+                            friction,
                         ));
                     }
                     else {
                         let ent_vec = vec![(
                             ent_id,
                             px, py,
-                            i,
-                            j,
+                            mass,
+                            friction,
                         )];
                         //let hash_key = buc_a_str.clone().as_str();
                         block_hash.insert((i,j), ent_vec);
@@ -186,8 +133,8 @@ impl<'a> System<'a> for InterActorSys {
                    
                     let mut ind_i = 0usize;
                     let mut ind_j = 0usize;
-                    for &(entid_i,pos_ix,pos_iy,_,_) in v.iter() {
-                        for &(entid_j,pos_jx,pos_jy,_,_) in v.iter() {
+                    for &(entid_i,pos_ix,pos_iy,mass_i,fric_i) in v.iter() {
+                        for &(entid_j,pos_jx,pos_jy,mass_j,fric_j) in v.iter() {
                             if ind_j != ind_i && entid_i != entid_j {
                                 //println!("Hit: i={} and j={}", &entid_i, &entid_j);
                                 // Check if pair was already processed and skip if so
@@ -218,33 +165,58 @@ impl<'a> System<'a> for InterActorSys {
                                     let mut vel_vecj = na::Vector2::new(0.0,0.0);
                                     // get possibilities of velocity components from
                                     //  each entity
+                                    let mut any_movable = false;
                                     if let Some(velocity_i) = svel_i {
                                         // copy velocity value into edit vel
-                                        vel_veci.x = velocity_i.x;
-                                        vel_veci.y = velocity_i.y;
-                                        vel_i = Some(&mut vel_veci);
+                                        if velocity_i.frozen == false {
+                                            vel_veci.x = velocity_i.x;
+                                            vel_veci.y = velocity_i.y;
+                                            vel_i = Some(&mut vel_veci);
+                                            any_movable = true;
+                                        }
                                     }
                                     if let Some(velocity_j) = svel_j {
                                         // copy velocity value into edit vel
-                                        vel_vecj.x = velocity_j.x;
-                                        vel_vecj.y = velocity_j.y;
-                                        vel_j = Some(&mut vel_vecj);
+                                        if velocity_j.frozen == false {
+                                            vel_vecj.x = velocity_j.x;
+                                            vel_vecj.y = velocity_j.y;
+                                            vel_j = Some(&mut vel_vecj);
+                                            any_movable = true;
+                                        }
                                     }
-                                    // Calculcate and update the velocities of these two entities
-                                    Self::actors_push(&pos_i, &pos_j, vel_i, vel_j);
 
-                                    // Update velocities of pair of entities
-                                    // if they have velocity components, update the velocity
-                                    let svel_i = vel.get_mut(ent_i);
-                                    if let Some(mut velocity_i) = svel_i {
-                                        velocity_i.x = vel_veci.x;
-                                        velocity_i.y = vel_veci.y;
+                                    if any_movable {
+                                        // Calculcate and update the velocities of these two entities
+
+                                        physics::actors_push(&pos_i, &pos_j, vel_i, vel_j,
+                                            mass_i, mass_j, fric_i, fric_j, 50.0);
+                                        // physics::actors_push_squares(&pos_i, &pos_j, vel_i, vel_j,
+                                        //     mass_i, mass_j, fric_i, fric_j, 40.0);
+
+                                        // Update velocities of pair of entities
+                                        // if they have velocity components, update the velocity
+                                        let svel_i = vel.get_mut(ent_i);
+                                        if let Some(mut velocity_i) = svel_i {
+                                            if velocity_i.frozen == false {
+                                                velocity_i.x = vel_veci.x;
+                                                velocity_i.y = vel_veci.y;
+                                            }
+                                            else {
+                                                //velocity_i.frozen = false;
+                                            }
+                                        }
+                                        let svel_j = vel.get_mut(ent_j);
+                                        if let Some(mut velocity_j) = svel_j {
+                                            if velocity_j.frozen == false {
+                                                velocity_j.x = vel_vecj.x;
+                                                velocity_j.y = vel_vecj.y;
+                                            }
+                                            else {
+                                                //velocity_j.frozen = false;
+                                            }
+                                        }
                                     }
-                                    let svel_j = vel.get_mut(ent_j);
-                                    if let Some(mut velocity_j) = svel_j {
-                                        velocity_j.x = vel_vecj.x;
-                                        velocity_j.y = vel_vecj.y;
-                                    }
+                                    
                                     
                                 }
 

@@ -11,6 +11,8 @@ use ggez::{GameResult};
 mod conf;
 // Builders for entity types
 mod entities;
+// Simple physics module
+mod physics;
 // Components available to entities
 mod components;
 // Shared world data
@@ -34,10 +36,14 @@ use crate::conf::*;
 
 // Do setup and start main event loop
 pub fn main() -> GameResult {
+
+    let win_setup = get_window_setup();
+    let win_mode = get_window_mode();
+
     // get ggez context build - builds window app
     let mut cb = ggez::ContextBuilder::new("super_simple", "ggez")
-        .window_setup(get_window_setup())
-        .window_mode(get_window_mode());
+        .window_setup(win_setup)
+        .window_mode(win_mode);
 
     // insert cargo manifest dir /resources into resources paths
     if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
@@ -51,7 +57,7 @@ pub fn main() -> GameResult {
 
     //ggez::graphics::set_window_icon(ctx, Some("/icon.png"))?;
     // create app's state
-    let state = &mut crate::game_state::GameState::new(ctx)?;
+    let state = &mut crate::game_state::GameState::new(ctx, win_mode)?;
 
     
     filesystem::print_all(ctx);

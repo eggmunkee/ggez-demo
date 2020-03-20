@@ -6,15 +6,15 @@ use ggez::event::{self, KeyCode, KeyMods, MouseButton};
 //use ggez::graphics;
 use ggez::nalgebra as na;
 use ggez::{Context, GameResult, GameError};
-use ggez::conf::{NumSamples,WindowSetup};
-use ggez::graphics::{Color,Image,set_window_title};
+use ggez::conf::{NumSamples,WindowSetup,WindowMode};
+use ggez::graphics::{Rect,Color,Image,set_window_title};
 
 use specs::{Builder, Component, DispatcherBuilder, Dispatcher,// ReadStorage, WriteStorage, 
     System, VecStorage, World, WorldExt, RunNow};
 use rand::prelude::*;
 // =====================================
 
-use crate::resources::{InputResource,WorldAction};
+use crate::resources::{InputResource,WorldAction,GameStateResource};
 //use crate::components::{Position,Velocity,DisplayComp};
 //use systems::{};
 use crate::world::{create_world,create_dispatcher};
@@ -34,6 +34,8 @@ pub enum State {
 // Main game state struct
 pub struct GameState<'a> {
     pub current_state: State,
+    pub window_w: f32,
+    pub window_h: f32,
     pub dispatcher: Dispatcher<'a,'a>,
     pub world: World,
     pub font: graphics::Font,
@@ -43,16 +45,25 @@ pub struct GameState<'a> {
 }
 
 impl<'a> GameState<'a> {
-    pub fn new(ctx: &mut Context) -> GameResult<GameState<'static>> {
-        
+    pub fn new(ctx: &mut Context, window_mode: WindowMode) -> GameResult<GameState<'static>> {
+
+        // Create game state related to window size/mode
+        let (win_w, win_h) = ggez::graphics::drawable_size(ctx);
+        let game_state_resource = GameStateResource {
+            window_w: win_w, window_h: win_h, window_mode: window_mode,
+            stop_double: false,
+        };
+
         let font = graphics::Font::new(ctx, "/FreeMonoBold.ttf")?;
-        let text = graphics::Text::new(("-- Paused --", font, 48.0));
+        let text = graphics::Text::new(("PAUSED", font, 52.0));
 
         // Create main state instance with dispatcher and world
         let mut s = GameState { 
             current_state: State::Running,
+            window_w: win_w,
+            window_h: win_h,
             dispatcher: create_dispatcher(), 
-            world: create_world(ctx),
+            world: create_world(ctx, game_state_resource),
             font: font,
             // image_lookup: HashMap::<String,usize>::new(),
             // images: Vec::<Image>::new(),
@@ -255,7 +266,7 @@ impl event::EventHandler for GameState<'static> {
         else if keycode == KeyCode::J {
             // Get world action if any
             //println!("Processing AddCircle action");
-            crate::entities::ball::BallBuilder::build(&mut self.world, ctx, 100.0, 400.0, -2.0, 0.0);
+            crate::entities::ball::BallBuilder::build_collider(&mut self.world, ctx, 100.0, 400.0, -2.0, 0.0, 20.0, 0.05);
 
         }
 
@@ -274,7 +285,38 @@ impl event::EventHandler for GameState<'static> {
         }
     }
 
-    fn resize_event(&mut self, _ctx: &mut Context, _width: f32, _height: f32) {
-        println!("Resized: {}, {}", &_width, &_height);
+    fn resize_event(&mut self, ctx: &mut Context, width: f32, height: f32) {
+        println!("Resized: {}, {}", &width, &height);
+
+
+        // set resource w/h
+        let mut game_state_writer = self.world.fetch_mut::<GameStateResource>();
+
+        if game_state_writer.stop_double {
+            game_state_writer.stop_double = false;
+        }
+        else {
+            self.window_w = width;
+            self.window_h = height;
+    
+            game_state_writer.window_w = width;
+            game_state_writer.window_h = height;
+            game_state_writer.stop_double = true;
+    
+            let mut mode = game_state_writer.window_mode;
+    
+            mode.width = width;
+            mode.height = height;
+            println!("New window mode {:?}", &mode);
+            //ggez::graphics::set_mode(ctx, mode);
+    
+            ggez::graphics::set_screen_coordinates(ctx, Rect::new(0.0, 0.0, width, height));
+    
+    
+    
+        }
+
+        drop(game_state_writer);
+        
     }
 }

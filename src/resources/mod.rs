@@ -5,7 +5,19 @@ use std::collections::hash_map::{Entry};
 use ggez::graphics;
 use ggez::graphics::{Image,Font};
 use ggez::{Context,GameResult,GameError};
+use ggez::conf::{WindowMode};
 use specs::{World};
+
+
+
+#[derive(Default,Debug)]
+pub struct GameStateResource {
+    pub window_w: f32,
+    pub window_h: f32,
+    pub window_mode: WindowMode,
+    pub stop_double: bool,
+}
+
 
 #[allow(dead_code)]
 pub struct ImageResources {
@@ -127,6 +139,13 @@ impl InputResource {
 }
 
 pub fn add_resources(world: &mut World, ctx: &mut Context) {
+
+    //let (win_w, win_h) = ggez::graphics::drawable_size(ctx);
+    // let curr_win_mode = ggez::graphics::get_mode(ctx);
+    // world.insert(GameStateResource {
+    //     window_w: win_w, window_h: win_h,
+    // });
+
     world.insert(InputResource { 
         dirs_pressed: [false,false,false,false],
         jump_pressed: false,

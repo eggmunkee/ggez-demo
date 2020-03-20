@@ -1,8 +1,8 @@
 use std::fmt;
 use ggez::{Context,GameResult};
 use ggez::nalgebra as na;
-use specs::{Builder, Component,Entity, DispatcherBuilder, ReadStorage, WriteStorage, System, VecStorage, World, WorldExt, RunNow};
-use specs::shred::{Dispatcher};
+use specs::{ Component,Entity, VecStorage, World, WorldExt};
+//use specs::shred::{Dispatcher};
 
 use crate::game_state::{GameState};
 
@@ -32,6 +32,7 @@ pub struct Velocity {
     pub x: f32,
     pub y: f32,
     pub gravity: bool,
+    pub frozen: bool,
 }
 
 impl Component for Velocity {
@@ -64,17 +65,15 @@ pub struct DisplayComp {
     pub circle: bool,
     pub display_type: DisplayCompType,
 }
-
 impl DisplayComp {
-    fn draw_self(game_state: &mut GameState, entity: &Entity, ctx: &mut Context) -> GameResult<()> {
+    #[allow(dead_code)]
+    fn draw_self(_game_state: &mut GameState, _entity: &Entity, _ctx: &mut Context) -> GameResult<()> {
         Ok(())
     }
 
 }
-
 impl Component for DisplayComp {
     type Storage = VecStorage<Self>;
-
 }
 
 

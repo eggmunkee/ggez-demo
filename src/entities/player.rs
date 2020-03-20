@@ -16,15 +16,15 @@ pub struct PlayerEntityBuilder;
 impl PlayerEntityBuilder {
     pub fn build(world: &mut World, ctx: &mut Context, x: f32, y: f32) -> Entity {
 
-        let mut player_comp = PlayerComponent::new(ctx, &"/blob.png".to_string());
+        let mut player_comp = PlayerComponent::new();
         player_comp.player_name.clear();
         player_comp.player_name.push_str("Noah");
         let entity = world.create_entity()
         .with(Position { x: x, y: y })
-        .with(Velocity { x: 0.0, y: 0.0, gravity: true })
+        .with(Velocity { x: 0.0, y: 0.0, gravity: true, frozen: false })
         .with(DisplayComp { circle: false, display_type: DisplayCompType::DrawSelf })
         .with(CharacterDisplayComponent::new(ctx, &"/blob.png".to_string()))
-        .with(Collision::new_square(5.0))
+        .with(Collision::new_specs(75.0,0.001))
         .with(player_comp)
         .build();
 

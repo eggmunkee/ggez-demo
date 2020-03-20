@@ -2,11 +2,11 @@ use ggez::{Context};
 use ggez::graphics;
 use ggez::graphics::{Image,Color};
 use ggez::nalgebra as na;
-use specs::{Builder, Component, Entity, DenseVecStorage, World, WorldExt, RunNow};
-use specs::shred::{Dispatcher};
+use specs::{ Component, DenseVecStorage, World, WorldExt };
+//use specs::shred::{Dispatcher};
 use rand::prelude::*;
 
-use crate::game_state::{GameState};
+//use crate::game_state::{GameState};
 
 #[derive(Debug)]
 pub struct PlayerComponent {
@@ -21,7 +21,7 @@ impl Component for PlayerComponent {
 }
 
 impl PlayerComponent {
-    pub fn new(ctx: &mut Context, char_img: &String) -> PlayerComponent {
+    pub fn new() -> PlayerComponent {
 
         //let image = Image::new(ctx, char_img.clone()).unwrap();
 
@@ -33,6 +33,7 @@ impl PlayerComponent {
             // path: char_img.clone()
         }
     }
+    #[allow(dead_code)]
     pub fn set_name(&mut self, name: String) {
         self.player_name = name;
     }
@@ -89,16 +90,16 @@ impl CharacterDisplayComponent {
 // }
 
 impl super::RenderTrait for CharacterDisplayComponent {
-    fn draw(&self, ctx: &mut Context, world: &World, ent: Option<u32>, pos: na::Point2::<f32>) {
+    fn draw(&self, ctx: &mut Context, _world: &World, _ent: Option<u32>, pos: na::Point2::<f32>) {
         //println!("PlayerRenderTrait drawing...");
         let mut rng = rand::thread_rng();
-        let mut draw_ok = true;
+        let mut _draw_ok = true;
         let w = self.image.width();
         let h = self.image.height();
         let draw_pos = na::Point2::<f32>::new(pos.x - (w as f32 / 2.0), pos.y - (h as f32 / 2.0));
         // color part:  ,Color::new(1.0,0.7,0.7,1.0)
         if let Err(_) = ggez::graphics::draw(ctx, &self.image, (draw_pos.clone(),)) { // add back x/y pos  //
-            draw_ok = false;
+            _draw_ok = false;
         }
 
         if let Ok(rect) = graphics::Mesh::new_rectangle(
@@ -107,11 +108,11 @@ impl super::RenderTrait for CharacterDisplayComponent {
             graphics::Rect::from([0.0,0.0,4.0,4.0]),
             graphics::WHITE,
         ) {
-            let mut col_vals: (u8,) = rng.gen();
+            let col_vals: (u8,) = rng.gen();
             //println!("Entity {}, Circle pos: {:?}", ent.id(), pos);
             if let Err(_) = graphics::draw(ctx, &rect, (na::Point2::new(pos.x-2.0, pos.y-2.0),
                     Color::from_rgba(col_vals.0,col_vals.0,col_vals.0,255) )) {
-                draw_ok = false;
+                _draw_ok = false;
             };  
         }
     }
